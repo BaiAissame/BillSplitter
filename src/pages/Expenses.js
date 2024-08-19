@@ -6,7 +6,7 @@ function Expenses( {listFriends,addPayment,listPayment,handleDeletePayment} ) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const paymentData = Object.fromEntries(formData);
-    paymentData.friend = listFriends[paymentData.friend] || '';
+    paymentData.name = listFriends[paymentData.name] || '';
     addPayment(paymentData); 
   };
   return (
@@ -16,16 +16,16 @@ function Expenses( {listFriends,addPayment,listPayment,handleDeletePayment} ) {
         <div className='row mt-5'>
 
           <div className='col-8'>
-            <select className="form-select" aria-label="Default select example" name="friend">
+            <select className="form-select" aria-label="Default select example" name="name">
               <option defaultValue="Open this select menu"></option>
-              {listFriends.map((friend,index)=>{
-                return <option key={index} value={index}>{friend}</option>
+              {listFriends.map((name,index)=>{
+                return <option key={index} value={index}>{name}</option>
               })}
             </select>
           </div>
 
           <div className='col-4'>
-            <input className="form-control" name="cost" type="number" />
+            <input className="form-control" name="cost" type="number" placeholder="cost" />
           </div>
 
         </div>
@@ -39,7 +39,9 @@ function Expenses( {listFriends,addPayment,listPayment,handleDeletePayment} ) {
           <button className='col-4 btn btn-primary' type="submit">Ajouter</button>
         </div>
       </form>
-      <ListPayment handleDeletePayment={handleDeletePayment} listPayment={listPayment}/>
+      <ul className="list-group mt-3">
+        <ListPayment handleDeletePayment={handleDeletePayment} listPayment={listPayment}/>
+      </ul>
     </div>
   )
 }

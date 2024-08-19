@@ -4,13 +4,28 @@ import ListFriend from '../component/ListFriends';
 
 const Friends = forwardRef((props, ref) => {
   return (
-  
-    <div className='mt-5'>
-      <input type="text" ref={ref} />
-      <button onClick={props.addFriend}>+</button>
-      <ListFriend listFriends={props.listFriends} handleDeleteFriend={props.handleDeleteFriend}/>
-    </div>
+    <>
+      <div className='input-group input-group-lg mt-5' style={{ display: 'flex' }}>
+        <input
+          type="text"
+          className="form-control fs-4"
+          ref={ref}
+          style={{ flex: 0.9 }} // Prend 80% de l'espace disponible
+        />
+        <button
+          className="btn btn-secondary btn-lg fs-3"
+          style={{ flex: 0.1 }} // Prend 20% de l'espace disponible
+          onClick={props.addFriend}
+        >
+          +
+        </button>
+      </div>
+      <ul className="list-group mt-3">
+        <ListFriend listFriends={props.listFriends} handleDeleteFriend={props.handleDeleteFriend}/>
+      </ul>
+    </>
   );
 });
+
 
 export default Friends;

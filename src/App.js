@@ -13,13 +13,12 @@ function App() {
   const [page,setPage] = useState('Friends');
   const [listFriends,setListFriends] = useState([]);
   const [listPayment,setListPayment] = useState([]);
-  const [listPaymentTotal,setListPaymentTotal] = useState([]);
+  const [listTransactions,setListTransactions] = useState([]);
   
-
   const inputRef = useRef(null);
 
   const handleDeleteFriend = (index) => {
-    setListFriends(listFriends.filter((friend,i) => i !== index));
+    setListFriends(listFriends.filter((name,i) => i !== index));
   }
   
   const handleDeletePayment = (index) => {
@@ -38,14 +37,66 @@ function App() {
     }
   }
   const generateBill = () => {
-    let listBill = listPayment;
-    for (let i = 0; i < listBill.length; i++) {
-      for (let j = 1; j < listBill.length; j++) {
-        if (listBill[i].friend===listBill[j].friend && i<j  ) {
-          listBill[i].cost += listBill[j].cost;
+    let listBill = new Map();
+    for (let i = 0; i < listPayment.length; i++) {
+        if (listBill.has(listPayment[i].name)) {
+          listBill.set(listPayment[i].name,+listBill.get(listPayment[i].name) + +listPayment[i].cost);
+        } else {
+          listBill.set(listPayment[i].name,listPayment[i].cost);
+        }
+      }
+    return listBill;
+  }
+
+  const repartitionMoney = (listFriends, listPayment) => {
+    const totalCost = listPayment.reduce((sum, payment) => sum + Number(payment.cost), 0);
+    const part = totalCost / listFriends.length;
+    let listBill = generateBill();
+    let listTransactions = [];
+    let debtHolder = new Map();
+    let bankFriend = new Map();
+  
+    for (let [name, cost] of listBill.entries()) {
+      if (Number(cost) < part) {
+        debtHolder.set(name, part - Number(cost));
+      } else {
+        bankFriend.set(name, Number(cost) - part);
+      }
+    }
+  
+    let sortedDebtHolders = Array.from(debtHolder.entries()).sort((a, b) => b[1] - a[1]);
+    let sortedBankFriends = Array.from(bankFriend.entries()).sort((a, b) => b[1] - a[1]);
+    console.log(debtHolder);
+    console.log(bankFriend);
+    for (let i = 0; i < sortedDebtHolders.length; i++) {
+      let [debtorName, debtAmount] = sortedDebtHolders[i];
+      if (debtAmount === 0) continue;
+  
+      for (let j = 0; j < sortedBankFriends.length; j++) {
+        let [creditor, creditAmount] = sortedBankFriends[j];
+        if (creditAmount === 0) continue;
+  
+        let transaction = { debtHolder: debtorName, bank: creditor };
+  
+        if (debtAmount > creditAmount) {
+          transaction.cost = creditAmount;
+          debtAmount -= creditAmount;
+          sortedBankFriends[j][1] = 0;
+        } else {
+          transaction.cost = debtAmount;
+          sortedBankFriends[j][1] -= debtAmount;
+          debtAmount = 0;
+        }
+  
+        listTransactions.push(transaction);
+        sortedDebtHolders[i][1] = debtAmount;
+        if (debtAmount === 0) {
+          break;
         }
       }
     }
+    console.log(listTransactions);
+    setListTransactions(listTransactions);
   }
 
   const handleRoute = (e) => {
@@ -59,7 +110,7 @@ function App() {
       case 'Expenses':
         return <Expenses listFriends={listFriends} listPayment={listPayment} addPayment={addPayment} handleDeletePayment={handleDeletePayment}/>;
       case 'Transactions':
-        return <Transactions listFriends={listFriends} listPayment={listPayment}/>;
+        return <Transactions listFriends={listFriends} listPayment={listPayment} listTransactions={listTransactions} repartitionMoney={repartitionMoney}/>;
       default:
         return <Friends ref={inputRef} addFriend={addFriend} listFriends={listFriends} handleDeleteFriend={handleDeleteFriend}/>;
     }
@@ -67,10 +118,10 @@ function App() {
   }
 
   return (
-    <>
+    <div class="container">
     <Nav handleRoute={handleRoute} />
     {render()}
-    </>
+    </div>
 );
 }
 
