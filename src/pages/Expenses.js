@@ -1,31 +1,67 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import ListPayment from '../component/ListPayment';
+import axios from 'axios';
 
-function Expenses( {listFriends,addPayment,listPayment,handleDeletePayment} ) {
-  const handleSubmit = (e)=>{
+function Expenses( {listFriends,listPayment,setListPayment} ) {
+
+
+
+  useEffect(() => {
+    axios.get('http://localhost:8080/api/payments')
+        .then(response => {
+          setListPayment(response.data);
+        })
+        .catch(error => {
+            console.error('There was an error fetching the friends!', error);
+        });
+  }, []);// eslint-disable-line react-hooks/exhaustive-deps
+
+
+  const handleDeletePayment = (idPayment) => {
+    axios.delete(`http://localhost:8080/api/payments/${idPayment}`)
+      .then(() => {
+        setListPayment(listPayment.filter(payment => payment.idPayment !== idPayment));
+      })
+      .catch(error => {
+        console.error('There was an error deleting the payment!', error);
+      });
+  };
+
+  const addPayment = (e)=>{
     e.preventDefault();
     const formData = new FormData(e.target);
     const paymentData = Object.fromEntries(formData);
-    paymentData.name = listFriends[paymentData.name] || '';
-    addPayment(paymentData); 
+    paymentData.payment=Number(paymentData.payment);
+    axios.post('http://localhost:8080/api/payments', paymentData)
+    .then(response => {
+      setListPayment([...listPayment,response.data]);
+      e.target.reset();
+      console.log(listPayment);
+    })
+    .catch(error => {
+      console.error('There was an error adding the friend!', error);
+    });
   };
+
+
+
   return (
     <div className='container'>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={addPayment}>
         <div className='row mt-5'>
 
           <div className='col-8'>
-            <select className="form-select" aria-label="Default select example" name="name">
+            <select className="form-select" aria-label="Default select example" name="nameFriend">
               <option defaultValue="Open this select menu"></option>
-              {listFriends.map((name,index)=>{
-                return <option key={index} value={index}>{name}</option>
+              {listFriends.map((friend)=>{
+                return <option key={friend.idFriend} value={friend.nameFriend}>{friend.nameFriend}</option>
               })}
             </select>
           </div>
 
           <div className='col-4'>
-            <input className="form-control" name="cost" type="number" placeholder="cost" />
+            <input className="form-control" name="payment" type="number" placeholder="cost" />
           </div>
 
         </div>
@@ -40,7 +76,12 @@ function Expenses( {listFriends,addPayment,listPayment,handleDeletePayment} ) {
         </div>
       </form>
       <ul className="list-group mt-3">
-        <ListPayment handleDeletePayment={handleDeletePayment} listPayment={listPayment}/>
+        <ListPayment 
+            handleDeletePayment={handleDeletePayment} 
+            listPayment={listPayment} 
+            listFriends={listFriends} 
+            setListPayment={setListPayment}
+          />
       </ul>
     </div>
   )

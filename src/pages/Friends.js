@@ -10,11 +10,11 @@ const Friends = forwardRef((props, ref) => {
           type="text"
           className="form-control fs-4"
           ref={ref}
-          style={{ flex: 0.9 }} // Prend 80% de l'espace disponible
+          style={{ flex: 0.9 }} 
         />
         <button
           className="btn btn-secondary btn-lg fs-3"
-          style={{ flex: 0.1 }} // Prend 20% de l'espace disponible
+          style={{ flex: 0.1 }} 
           onClick={props.addFriend}
         >
           +
